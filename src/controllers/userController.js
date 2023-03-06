@@ -1,6 +1,7 @@
 import { getConnection } from "../database/index.js";
 import { users } from "../database/models.js";
 import * as dotenv from "dotenv";
+import { Prompt } from "../database/schemas/prompts.js";
 import {
   getDefaultResponse,
   checkExistUser,
@@ -112,6 +113,80 @@ export class UserController {
       return res.status(400).send(e);
     } finally {
       mongoose.connection.close();
+    }
+  }
+
+  /**
+   * Adding new prompts for user
+   */
+  async addNewPrompt(req, res, next) {
+    let finalResponse = getDefaultResponse();
+    const userId = req.user.id;
+    console.log("User id is", userId);
+    const promptData = req.body;
+    let connection;
+    try {
+      connection = await getConnection();
+      if (!promptData.title) {
+        finalResponse.message = CONSTANTS.REQUIRED_FIELDS_ARE_MISSING;
+        finalResponse.code = CODES.BAD_REQUEST;
+        return res.status(400).send(finalResponse);
+      }
+      // Find the user by ID
+      users
+        .findById(userId)
+        .then((user) => {
+          // Create a new prompt and add it to the user's prompts array
+          const prompt = new Prompt(promptData);
+          user.prompts.push(prompt);
+          // Save the updated user with the new prompt
+          return user.save();
+        })
+        .then((savedUser) => {
+          console.log("Saved user response", savedUser);
+          return res.status(200).send({ message: "Prompt Added" });
+        })
+        .catch((err) => {
+          console.error(err);
+          return res.status(404).send({ message: "Error saving prompt" });
+        });
+    } catch (e) {
+      console.log("Error in adding new prompt", e);
+      return res.status(400).send(e);
+    } finally {
+      //   mongoose.connection.close();
+    }
+  }
+
+  /**
+   * Adding new prompts for user
+   */
+  async getAllUserPrompts(req, res, next) {
+    let finalResponse = getDefaultResponse();
+    const userId = req.user.id;
+    console.log("User id is", userId);
+    let connection;
+    try {
+      connection = await getConnection();
+      // Find the user by ID
+      users
+        .findById(userId)
+        .then((user) => {
+          // Create a new prompt and add it to the user's prompts array
+          console.log("User data is", user);
+          //   let prompts = user.prompts;
+          finalResponse.data = user.prompts;
+          return res.status(200).send(finalResponse);
+        })
+        .catch((err) => {
+          console.error(err);
+          return res.status(404).send({ message: "Error fetching prompts" });
+        });
+    } catch (e) {
+      console.log("Error fetching prompts", e);
+      return res.status(400).send(e);
+    } finally {
+      //   mongoose.connection.close();
     }
   }
 }
