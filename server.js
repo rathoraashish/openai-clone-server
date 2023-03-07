@@ -3,12 +3,7 @@ import cors from "cors";
 
 //import routes
 import { router as userRoute } from "./src/routes/users.js";
-
-//import middleware
-import { validateUser } from "./src/middlewares/userAuth.js";
-
-//import controller functions
-import { OpenAIController } from "./src/controllers/openAIController.js";
+import { router as promptRoute } from "./src/routes/openai.js";
 
 // Create Express app
 const app = express();
@@ -22,6 +17,9 @@ app.use(cors());
 // Add new user route
 app.use("/user", userRoute);
 
+// Prompt route for openAI apis(davinci, dalle)
+app.use("/prompt", promptRoute);
+
 /**
  * GET /
  * Returns a simple message.
@@ -31,24 +29,6 @@ app.get("/", (req, res) => {
     message: "Hello World!",
   });
 });
-
-/**
- * POST /davinci
- * Returns a response from OpenAI's text completion model.
- */
-app.post("/davinci", validateUser, new OpenAIController().davinciHandler);
-
-/**
- * POST /dalle
- * Returns a response from OpenAI's image generation model.
- */
-app.post("/dalle", validateUser, new OpenAIController().dalleHandler);
-
-/**
- * POST /whisper - BETA
- * Returns a response from OpenAI's speech to text generation.
- */
-app.post("/whisper", validateUser, new OpenAIController().whisperHandler);
 
 // Start server
 const port = process.env.PORT || 3001;
