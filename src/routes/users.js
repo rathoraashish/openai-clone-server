@@ -15,4 +15,7 @@ router.post("/add-prompt", validateUser, new UserController().addNewPrompt);
 // Get all prompts
 router.get("/prompts", validateUser, new UserController().getAllUserPrompts);
 
+//Get prompt by prompt id
+router.get("/prompt", validateUser, new UserController().getPromptById);
+
 export { router };

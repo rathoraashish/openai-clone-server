@@ -159,7 +159,7 @@ export class UserController {
   }
 
   /**
-   * Adding new prompts for user
+   * Get all prompts of user
    */
   async getAllUserPrompts(req, res, next) {
     let finalResponse = getDefaultResponse();
@@ -181,6 +181,43 @@ export class UserController {
         .catch((err) => {
           console.error(err);
           return res.status(404).send({ message: "Error fetching prompts" });
+        });
+    } catch (e) {
+      console.log("Error fetching prompts", e);
+      return res.status(400).send(e);
+    } finally {
+      //   mongoose.connection.close();
+    }
+  }
+
+  /**
+   * Get user prompt by id
+   */
+  async getPromptById(req, res, next) {
+    let finalResponse = getDefaultResponse();
+    const userId = req.user.id;
+    const promptId = req.query.id;
+    console.log("User id is", userId);
+    console.log("Prompt id is", promptId);
+    let connection;
+    try {
+      connection = await getConnection();
+      if (!userId || !promptId) {
+        finalResponse.message = CONSTANTS.REQUIRED_FIELDS_ARE_MISSING;
+        finalResponse.code = CODES.BAD_REQUEST;
+        return res.status(400).send(finalResponse);
+      }
+      // Find the user by ID
+      users
+        .findOne({ _id: userId, "prompts._id": promptId }, { "prompts.$": 1 })
+        .then((user) => {
+          const prompt = user.prompts[0]; // Get the first (and only) element of the prompts array
+          finalResponse.data = prompt;
+          res.status(200).json(finalResponse);
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(404).json({ message: "Error fetching prompt" });
         });
     } catch (e) {
       console.log("Error fetching prompts", e);
