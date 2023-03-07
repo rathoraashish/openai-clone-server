@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["appname", "dalle", "davinci", "middlewares", "OPENAI"]
+  "cSpell.words": [
+    "appname",
+    "dalle",
+    "davinci",
+    "middlewares",
+    "OPENAI",
+    "updateprompthistory"
+  ]
 }
